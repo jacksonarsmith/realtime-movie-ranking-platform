@@ -1,0 +1,8 @@
+version: "2"
+sql: 
+  - schema: "infra/persistence/database/migration"
+    queries: "infra/persistence/database/queries"
+    engine: "postgresql"
+    gen:
+      go:
+        out: "internal/database"
