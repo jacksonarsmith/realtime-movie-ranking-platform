@@ -44,9 +44,9 @@ func StartServer() {
 
 	router := http.NewServeMux()
 
-	router.HandleFunc("GET /api/v1/health", healthCheckHandler)
-	router.HandleFunc("GET /api/v1/movies", getMoviesHandler)
-	router.HandleFunc("POST /api/v1/users", apiCfg.createUserHandler)
+	router.HandleFunc("GET /health", healthCheckHandler)
+	router.HandleFunc("GET /movies", getMoviesHandler)
+	router.HandleFunc("POST /users", apiCfg.createUserHandler)
 
 	router.Handle("/api/v1", http.StripPrefix("/api/v1", router))
 

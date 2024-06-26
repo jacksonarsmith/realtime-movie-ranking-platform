@@ -2,176 +2,192 @@ package scraper
 
 // import required libraries
 import (
-	"slices"
+	"context"
+	"log"
 	"strconv"
 	"strings"
 
-	"github.com/gocolly/colly"
+	"github.com/chromedp/cdproto/cdp"
+	"github.com/chromedp/chromedp"
 )
 
 // Movie structure to represent object model
 type movie struct {
-	rank      int
 	title     string
+	rank      int
+	image_src string
+	image_alt string
+	movie_url string
 	year      int
 	duration  int
 	audience  string
 	rating    float64
-	votes     float64
-	image_url string
-	image_alt string
-	movie_url string
 }
 
 // Function to parse data from https://www.imdb.com/chart/moviemeter/ (IMDB Most Popular Movies)
-func Scrape() [100]movie {
-	// Initialize collector, movie list, empty movie indices, counter and offset
-	c, movieList, emptyMovieIndices, counter, offset := colly.NewCollector(), [100]movie{}, []int{}, 0, 0
+func Scrape() []movie {
+	// Initialize empty movie slice
+	var movies []movie
 
-	// Set rank for each movie (Movies are scraped sequentially therefore it is safe to assume that the rank is the index + 1)
-	for i := 1; i < 101; i++ {
-		movieList[i-1].rank = i
+	// Log starting data fetching
+	log.Print("Starting data fetching...\n")
+
+	// Initialize chrome options
+	options := []chromedp.ExecAllocatorOption{
+		chromedp.NoFirstRun,
+		chromedp.NoDefaultBrowserCheck,
+		chromedp.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36"),
+		chromedp.Headless,
 	}
 
-	// OnHTML callback to scrape data
-	c.OnHTML(".ipc-metadata-list", func(e *colly.HTMLElement) {
+	// Initialize chrome instance with options
+	ctx, cancel := chromedp.NewExecAllocator(context.Background(), options...)
+	defer cancel()
 
-		// Extract image url and alt
-		e.ForEach(".ipc-image", func(i int, e *colly.HTMLElement) {
-			movieList[i].image_url = e.Attr("src")
-			movieList[i].image_alt = e.Attr("alt")
-		})
+	// Create new context with log
+	ctx, cancel = chromedp.NewContext(ctx, chromedp.WithLogf(log.Printf))
+	defer cancel()
 
-		// Extract movie url
-		e.ForEach(".ipc-title-link-wrapper", func(i int, e *colly.HTMLElement) {
-			movieList[i].movie_url = e.Attr("href")
-		})
+	// Initialize nodes slice
+	var nodes []*cdp.Node
+	err := chromedp.Run(ctx,
+		chromedp.Navigate("https://www.imdb.com/chart/moviemeter"),
+		chromedp.Nodes(".ipc-metadata-list-summary-item", &nodes, chromedp.ByQueryAll),
+	)
 
-		// Extract movie title
-		e.ForEach(".ipc-title__text", func(i int, e *colly.HTMLElement) {
-			movieList[i].title = e.Text
-		})
+	// Handle error
+	if err != nil {
+		log.Fatalf("Failed to execute chromedp tasks: %v", err)
+	}
 
-		// Extract for movie year, duration and audience then parse accordingly, results in format (yyyydurationaudience)
-		e.ForEach(".cli-title-metadata", func(i int, e *colly.HTMLElement) {
-			// Extract movie year
-			year, err := strconv.Atoi(e.Text[0:4])
+	// Initialize movie data variables
+	var title, ranking, image_src, image_alt, movie_url, span_text, audience, rating string
+	var year, duration int
+
+	// Iterate over nodes
+	for _, node := range nodes {
+		/*
+			Extract data from node from the following selectors: title, ranking, image_src,
+			image_alt, movie_url, span_text, rating to satisfy movie structure above
+		*/
+		err := chromedp.Run(ctx,
+			chromedp.Text("h3", &title, chromedp.ByQuery, chromedp.FromNode(node)),
+			chromedp.Text(".meter-const-ranking", &ranking, chromedp.ByQuery, chromedp.FromNode(node)),
+			chromedp.AttributeValue("img", "src", &image_src, nil, chromedp.ByQuery, chromedp.FromNode(node)),
+			chromedp.AttributeValue("img", "alt", &image_alt, nil, chromedp.ByQuery, chromedp.FromNode(node)),
+			chromedp.AttributeValue("a", "href", &movie_url, nil, chromedp.ByQuery, chromedp.FromNode(node)),
+			chromedp.Text(".cli-title-metadata", &span_text, chromedp.ByQuery, chromedp.FromNode(node)),
+			chromedp.AttributeValue(".ipc-rating-star", "aria-label", &rating, nil, chromedp.ByQuery, chromedp.FromNode(node)),
+		)
+
+		// Handle error
+		if err != nil {
+			log.Printf("Failed to extract data: %v", err)
+			continue // Skip to next movie
+		}
+
+		// Do string manipulation to extract ranking
+		ranking = strings.Split(ranking, " ")[0] // First element of split string is always the ranking
+
+		// Convert string ranking to integer
+		rank, err := strconv.Atoi(ranking)
+
+		// Handle error
+		if err != nil {
+			panic(err)
+		}
+
+		// Extract year, duration and audience from span text calling the helper function extractMovieSpan
+		year, duration, audience = extractMovieSpan(span_text)
+
+		// Log movie data extracted from node
+		log.Printf("Title: %s, Image src: %s, Image alt: %s, Movie link: %s, Year: %d, Duration: %d, audience: %s, Rating: %f\n", title, image_src, image_alt, movie_url, year, duration, audience, extractRating(rating))
+
+		// Create movie object and append to movies slice
+		movie := movie{title: title, rank: rank, image_src: image_src, image_alt: image_alt, movie_url: movie_url, year: year, duration: duration, audience: audience, rating: extractRating(rating)}
+		movies = append(movies, movie)
+	}
+
+	// Log data fetching complete
+	log.Println("Data fetching complete")
+
+	// Return movies slice
+	return movies
+}
+
+// Helper function to extract year, duration and audience from span text
+func extractMovieSpan(span_text string) (int, int, string) {
+	// Split span text at '\n'
+	str := strings.Split(span_text, "\n")
+
+	// Initialize variables
+	var year, duration int
+	var audience string
+
+	// Iterate over split string
+	for i, s := range str {
+		// Do the following for year (0), duration (1) and audience (2)
+		switch {
+		case i == 0:
+			// Convert year to int
+			y, err := strconv.Atoi(s)
+
+			// Handle error
+			if err != nil {
+				panic(err)
+			}
+
+			year = y
+		case i == 1:
+			// Check to see if string contains 'h' or 'm', if so convert duration to minutes
+			if strings.Contains(s, "h") || strings.Contains(s, "m") {
+				duration = convertDurationToMinutes(s)
+			} else {
+				duration = 0
+			}
+		case i == 2:
+			// Set audience
+			audience = s
+		default:
+			// Set year, duration and audience to 0 and empty string
+			year = 0
+			duration = 0
+			audience = ""
+		}
+	}
+
+	// Return year, duration and audience
+	return year, duration, audience
+}
+
+// Helper function to extract rating from rating string
+func extractRating(rating string) float64 {
+	// Check to see if the rating contains 'This title is currently not ratable', if so set rating to 0 and add index to empty movie indices
+	if strings.Contains(rating, "This title is currently not ratable") {
+		return 0.0
+	} else {
+		// Extract rating from rating (format 'rating: x.x/10')
+		ratingLength := len(rating) - 3
+
+		// Check to see if rating length is greater than 0
+		if ratingLength > 0 {
+			// Parse rating and convert to float64
+			ratingFloat, err := strconv.ParseFloat(rating[ratingLength:], 64)
 
 			// Handle error
 			if err != nil {
 				panic(err)
 			} else {
-				movieList[i].year = year
+				// Set rating and increment counter
+				return ratingFloat
 			}
-
-			// Check to see if string contains 'm' (minutes) and parse accordingly
-			if strings.Contains(e.Text[4:], "m") {
-				// Split string at 'm'
-				split := strings.Split(e.Text[4:], "m")
-
-				// Iterate over split string, it will contain: (duration, audience)
-				for j, s := range split {
-
-					// Extract duration and convert to minutes
-					if j == 0 {
-						movieList[i].duration = convertDurationToMinutes(s)
-					}
-
-					// Extract audience
-					if j == 1 {
-						movieList[i].audience = s
-					}
-				}
-
-			} else {
-				// Split string at '\n' (newline)
-				split := strings.Split(e.Text[4:], "\n")
-
-				// Extract audience
-				movieList[i].audience = split[0]
-			}
-		})
-
-		// Extract movie rating
-		e.ForEach(".ipc-rating-star", func(i int, e *colly.HTMLElement) {
-			// Extract aria-label attribute
-			label := e.Attr("aria-label")
-
-			// Check to see if the label contains 'This title is currently not ratable', if so set rating to 0 and add index to empty movie indices
-			if strings.Contains(label, "This title is currently not ratable") {
-				movieList[counter].rating = 0
-				emptyMovieIndices = append(emptyMovieIndices, counter)
-				counter++
-			} else {
-				// Extract rating from label (format 'rating: x.x/10')
-				ratingLength := len(label) - 3
-
-				// Check to see if rating length is greater than 0
-				if ratingLength > 0 {
-					// Parse rating and convert to float64
-					rating, err := strconv.ParseFloat(label[ratingLength:], 64)
-
-					// Handle error
-					if err != nil {
-						panic(err)
-					} else {
-						// Set rating and increment counter
-						movieList[counter].rating = rating
-						counter++
-					}
-				}
-			}
-		})
-
-		// Extract movie votes
-		e.ForEach(".ipc-rating-star--voteCount", func(i int, e *colly.HTMLElement) {
-			// Check to see if index is in empty movie indices, if so add empty votes count and increment offset
-			if slices.Contains(emptyMovieIndices, i) {
-				addEmptyVotesCount(i+offset, movieList[:])
-				offset += 1
-			}
-
-			// Check to see if string contains 'K' or 'M' (thousands or millions) and parse accordingly
-			if strings.Contains(e.Text, "K") {
-				// Split string at 'K'
-				split := strings.Split(e.Text, "K")
-
-				// Convert votes to float64
-				votes, err := strconv.ParseFloat(split[0][3:], 64)
-
-				// Handle error
-				if err != nil {
-					panic(err)
-				} else {
-					// Set votes
-					movieList[i+offset].votes = votes * 1000
-				}
-			} else if strings.Contains(e.Text, "M") {
-				// Split string at 'M'
-				split := strings.Split(e.Text, "M")
-
-				// Convert votes to float64
-				votes, err := strconv.ParseFloat(split[0][3:], 64)
-
-				// Handle error
-				if err != nil {
-					panic(err)
-				} else {
-					// Set votes
-					movieList[i+offset].votes = votes * 1000000
-				}
-			}
-		})
-	})
-
-	// Visit URL
-	c.Visit("https://www.imdb.com/chart/moviemeter/")
-
-	// Return movie list
-	return movieList
+		} else {
+			return 0.0
+		}
+	}
 }
 
-// Helper function to convert duration from scraped data to minutes
+// Helper function to convert duration string to minutes
 func convertDurationToMinutes(duration string) int {
 	// Split duration string at 'h '
 	minutes, split := 0, strings.Split(duration, "h ")
@@ -212,7 +228,7 @@ func convertDurationToMinutes(duration string) int {
 				}
 			} else if i == 1 {
 				// Convert minutes to int
-				min, err := strconv.Atoi(s)
+				min, err := strconv.Atoi(s[:len(s)-1])
 
 				// Handle error
 				if err != nil {
@@ -226,17 +242,4 @@ func convertDurationToMinutes(duration string) int {
 
 	// Return duration in minutes
 	return minutes
-}
-
-// Helper function to add empty votes count to movie list
-func addEmptyVotesCount(index int, movieList []movie) bool {
-	// Check to see if index is out of bounds
-	if (index < 0) || (index >= len(movieList)) {
-		// Return false
-		return false
-	} else {
-		// Set votes to 0 and return true
-		movieList[index].votes = 0.0
-		return true
-	}
 }

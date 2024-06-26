@@ -1,0 +1,2 @@
+--name: CreateMovie :one 
+INSERT INTO movies (id, title, rank, peak_rank, release_year, duration, audience, rating, image_src, image_alt, movie_url, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *;
