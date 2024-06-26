@@ -12,22 +12,22 @@ import (
 )
 
 // Movie structure to represent object model
-type movie struct {
-	title     string
-	rank      int
-	image_src string
-	image_alt string
-	movie_url string
-	year      int
-	duration  int
-	audience  string
-	rating    float64
+type Movie struct {
+	Title    string
+	Rank     int32
+	Year     int32
+	Duration int32
+	Audience string
+	Rating   float64
+	ImageSrc string
+	ImageAlt string
+	MovieUrl string
 }
 
-// Function to parse data from https://www.imdb.com/chart/moviemeter/ (IMDB Most Popular Movies)
-func Scrape() []movie {
+// Function to parse data from https://www.imdb.com/chart/Moviemeter/ (IMDB Most Popular Movies)
+func Scrape() []Movie {
 	// Initialize empty movie slice
-	var movies []movie
+	var movies []Movie
 
 	// Log starting data fetching
 	log.Print("Starting data fetching...\n")
@@ -62,7 +62,7 @@ func Scrape() []movie {
 
 	// Initialize movie data variables
 	var title, ranking, image_src, image_alt, movie_url, span_text, audience, rating string
-	var year, duration int
+	var year, duration int32
 
 	// Iterate over nodes
 	for _, node := range nodes {
@@ -104,7 +104,7 @@ func Scrape() []movie {
 		log.Printf("Title: %s, Image src: %s, Image alt: %s, Movie link: %s, Year: %d, Duration: %d, audience: %s, Rating: %f\n", title, image_src, image_alt, movie_url, year, duration, audience, extractRating(rating))
 
 		// Create movie object and append to movies slice
-		movie := movie{title: title, rank: rank, image_src: image_src, image_alt: image_alt, movie_url: movie_url, year: year, duration: duration, audience: audience, rating: extractRating(rating)}
+		movie := Movie{Title: title, Rank: int32(rank), ImageSrc: image_src, ImageAlt: image_alt, MovieUrl: movie_url, Year: year, Duration: duration, Audience: audience, Rating: extractRating(rating)}
 		movies = append(movies, movie)
 	}
 
@@ -116,12 +116,12 @@ func Scrape() []movie {
 }
 
 // Helper function to extract year, duration and audience from span text
-func extractMovieSpan(span_text string) (int, int, string) {
+func extractMovieSpan(span_text string) (int32, int32, string) {
 	// Split span text at '\n'
 	str := strings.Split(span_text, "\n")
 
 	// Initialize variables
-	var year, duration int
+	var year, duration int32
 	var audience string
 
 	// Iterate over split string
@@ -137,7 +137,7 @@ func extractMovieSpan(span_text string) (int, int, string) {
 				panic(err)
 			}
 
-			year = y
+			year = int32(y)
 		case i == 1:
 			// Check to see if string contains 'h' or 'm', if so convert duration to minutes
 			if strings.Contains(s, "h") || strings.Contains(s, "m") {
@@ -188,7 +188,7 @@ func extractRating(rating string) float64 {
 }
 
 // Helper function to convert duration string to minutes
-func convertDurationToMinutes(duration string) int {
+func convertDurationToMinutes(duration string) int32 {
 	// Split duration string at 'h '
 	minutes, split := 0, strings.Split(duration, "h ")
 
@@ -201,7 +201,7 @@ func convertDurationToMinutes(duration string) int {
 		if err != nil {
 			panic(err)
 		} else {
-			return m * 60
+			return int32(m) * 60
 		}
 	} else {
 		// Iterate over split string, it will contain: (hours, minutes)
@@ -241,5 +241,5 @@ func convertDurationToMinutes(duration string) int {
 	}
 
 	// Return duration in minutes
-	return minutes
+	return int32(minutes)
 }

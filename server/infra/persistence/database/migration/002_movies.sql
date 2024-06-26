@@ -9,6 +9,7 @@ CREATE TABLE movies (
     duration INT NOT NULL,
     audience TEXT NOT NULL, 
     rating FLOAT NOT NULL, 
+    votes INT NOT NULL,
     image_src TEXT NOT NULL, 
     image_alt TEXT NOT NULL, 
     movie_url TEXT NOT NULL,

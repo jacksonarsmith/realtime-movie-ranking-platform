@@ -47,6 +47,7 @@ func StartServer() {
 	router.HandleFunc("GET /health", healthCheckHandler)
 	router.HandleFunc("GET /movies", getMoviesHandler)
 	router.HandleFunc("POST /users", apiCfg.createUserHandler)
+	router.HandleFunc("POST /data", apiCfg.createDataHandler)
 
 	router.Handle("/api/v1", http.StripPrefix("/api/v1", router))
 
