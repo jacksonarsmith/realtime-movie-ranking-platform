@@ -12,6 +12,45 @@ import (
 	"github.com/google/uuid"
 )
 
+const checkMovieExists = `-- name: CheckMovieExists :one
+SELECT EXISTS (
+    SELECT 1
+    FROM movies
+    WHERE title = $1
+      AND release_year = $2
+      AND duration = $3
+      AND audience = $4
+      AND image_src = $5
+      AND image_alt = $6
+      AND movie_url = $7
+) AS exists
+`
+
+type CheckMovieExistsParams struct {
+	Title       string
+	ReleaseYear int32
+	Duration    int32
+	Audience    string
+	ImageSrc    string
+	ImageAlt    string
+	MovieUrl    string
+}
+
+func (q *Queries) CheckMovieExists(ctx context.Context, arg CheckMovieExistsParams) (bool, error) {
+	row := q.db.QueryRowContext(ctx, checkMovieExists,
+		arg.Title,
+		arg.ReleaseYear,
+		arg.Duration,
+		arg.Audience,
+		arg.ImageSrc,
+		arg.ImageAlt,
+		arg.MovieUrl,
+	)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
 const createMovie = `-- name: CreateMovie :one
 INSERT INTO movies (id, title, rank, peak_rank, release_year, duration, audience, rating, votes, image_src, image_alt, movie_url, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING id, title, rank, peak_rank, release_year, duration, audience, rating, votes, image_src, image_alt, movie_url, created_at, updated_at
 `
@@ -68,4 +107,46 @@ func (q *Queries) CreateMovie(ctx context.Context, arg CreateMovieParams) (Movie
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const getMovies = `-- name: GetMovies :many
+SELECT id, title, rank, peak_rank, release_year, duration, audience, rating, votes, image_src, image_alt, movie_url, created_at, updated_at FROM movies
+`
+
+func (q *Queries) GetMovies(ctx context.Context) ([]Movie, error) {
+	rows, err := q.db.QueryContext(ctx, getMovies)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Movie
+	for rows.Next() {
+		var i Movie
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Rank,
+			&i.PeakRank,
+			&i.ReleaseYear,
+			&i.Duration,
+			&i.Audience,
+			&i.Rating,
+			&i.Votes,
+			&i.ImageSrc,
+			&i.ImageAlt,
+			&i.MovieUrl,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

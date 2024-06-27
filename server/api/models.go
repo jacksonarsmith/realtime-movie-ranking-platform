@@ -58,3 +58,11 @@ func databaseMovieToAPIMovie(movie database.Movie) Movie {
 		UpdatedAt:   movie.UpdatedAt,
 	}
 }
+
+func databaseMoviesToAPIMovies(movies []database.Movie) []Movie {
+	apiMovies := make([]Movie, 0, len(movies))
+	for _, movie := range movies {
+		apiMovies = append(apiMovies, databaseMovieToAPIMovie(movie))
+	}
+	return apiMovies
+}
