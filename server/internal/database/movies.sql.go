@@ -109,6 +109,59 @@ func (q *Queries) CreateMovie(ctx context.Context, arg CreateMovieParams) (Movie
 	return i, err
 }
 
+const getMovieById = `-- name: GetMovieById :one
+SELECT id, title, rank, peak_rank, release_year, duration, audience, rating, votes, image_src, image_alt, movie_url, created_at, updated_at
+  FROM movies
+  WHERE title = $1
+    AND release_year = $2
+    AND duration = $3
+    AND audience = $4
+    AND image_src = $5
+    AND image_alt = $6
+    AND movie_url = $7
+LIMIT 1
+`
+
+type GetMovieByIdParams struct {
+	Title       string
+	ReleaseYear int32
+	Duration    int32
+	Audience    string
+	ImageSrc    string
+	ImageAlt    string
+	MovieUrl    string
+}
+
+func (q *Queries) GetMovieById(ctx context.Context, arg GetMovieByIdParams) (Movie, error) {
+	row := q.db.QueryRowContext(ctx, getMovieById,
+		arg.Title,
+		arg.ReleaseYear,
+		arg.Duration,
+		arg.Audience,
+		arg.ImageSrc,
+		arg.ImageAlt,
+		arg.MovieUrl,
+	)
+	var i Movie
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.Rank,
+		&i.PeakRank,
+		&i.ReleaseYear,
+		&i.Duration,
+		&i.Audience,
+		&i.Rating,
+		&i.Votes,
+		&i.ImageSrc,
+		&i.ImageAlt,
+		&i.MovieUrl,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getMovies = `-- name: GetMovies :many
 SELECT id, title, rank, peak_rank, release_year, duration, audience, rating, votes, image_src, image_alt, movie_url, created_at, updated_at FROM movies
 `
@@ -149,4 +202,44 @@ func (q *Queries) GetMovies(ctx context.Context) ([]Movie, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateMovie = `-- name: UpdateMovie :one
+UPDATE movies SET rank = $2, peak_rank = $3, rating = $4, updated_at = $5 WHERE id = $1 RETURNING id, title, rank, peak_rank, release_year, duration, audience, rating, votes, image_src, image_alt, movie_url, created_at, updated_at
+`
+
+type UpdateMovieParams struct {
+	ID        uuid.UUID
+	Rank      int32
+	PeakRank  int32
+	Rating    float64
+	UpdatedAt time.Time
+}
+
+func (q *Queries) UpdateMovie(ctx context.Context, arg UpdateMovieParams) (Movie, error) {
+	row := q.db.QueryRowContext(ctx, updateMovie,
+		arg.ID,
+		arg.Rank,
+		arg.PeakRank,
+		arg.Rating,
+		arg.UpdatedAt,
+	)
+	var i Movie
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.Rank,
+		&i.PeakRank,
+		&i.ReleaseYear,
+		&i.Duration,
+		&i.Audience,
+		&i.Rating,
+		&i.Votes,
+		&i.ImageSrc,
+		&i.ImageAlt,
+		&i.MovieUrl,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }

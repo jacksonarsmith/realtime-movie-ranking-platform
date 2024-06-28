@@ -75,12 +75,51 @@ func StartServer() {
 		})
 
 		if err != nil {
-			log.Printf("Error checking if movie exists: %v", err)
+			log.Printf("Error checking if movie exists: %v\n", err)
 			continue
 		}
 
 		if exists {
-			log.Printf("Movie already exists: %v", movie)
+			log.Printf("Movie already exists: %v\n", movie)
+
+			m, err := apiCfg.DB.GetMovieById(context.Background(), database.GetMovieByIdParams{
+				Title:       movie.Title,
+				ReleaseYear: movie.Year,
+				Duration:    movie.Duration,
+				Audience:    movie.Audience,
+				ImageSrc:    movie.ImageSrc,
+				ImageAlt:    movie.ImageAlt,
+				MovieUrl:    movie.MovieUrl,
+			})
+
+			if err != nil {
+				log.Printf("Error getting movie: %v\n", err)
+			} else {
+				log.Printf("Retrieved movie: %s\n", m.ID.String())
+
+				newPeak := m.PeakRank
+
+				if m.PeakRank < movie.Rank {
+					newPeak = movie.Rank
+				}
+
+				updatedMovie, err := apiCfg.DB.UpdateMovie(context.Background(), database.UpdateMovieParams{
+					ID:        m.ID,
+					Rank:      m.Rank,
+					PeakRank:  newPeak,
+					Rating:    m.Rating,
+					UpdatedAt: time.Now().UTC(),
+				})
+
+				log.Printf("Updated movie: %v\n", updatedMovie)
+
+				if err != nil {
+					log.Printf("Error updating movie: %v\n", err)
+				} else {
+					log.Printf("Updated movie: %v\n", updatedMovie)
+				}
+			}
+
 			continue
 		} else {
 			m, err := apiCfg.DB.CreateMovie(context.Background(), database.CreateMovieParams{

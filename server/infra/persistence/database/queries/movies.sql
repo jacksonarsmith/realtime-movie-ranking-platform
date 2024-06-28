@@ -17,3 +17,17 @@ SELECT EXISTS (
       AND movie_url = $7
 ) AS exists;
 
+-- name: GetMovieById :one
+SELECT *
+  FROM movies
+  WHERE title = $1
+    AND release_year = $2
+    AND duration = $3
+    AND audience = $4
+    AND image_src = $5
+    AND image_alt = $6
+    AND movie_url = $7
+LIMIT 1;
+
+-- name: UpdateMovie :one
+UPDATE movies SET rank = $2, peak_rank = $3, rating = $4, updated_at = $5 WHERE id = $1 RETURNING *;
