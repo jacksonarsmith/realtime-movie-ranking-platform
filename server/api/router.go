@@ -48,11 +48,14 @@ func StartServer() {
 
 	router := http.NewServeMux()
 
-	router.HandleFunc("GET /health", healthCheckHandler)
-	router.HandleFunc("GET /movies", getMoviesHandler)
-	router.HandleFunc("POST /users", apiCfg.createUserHandler)
+	// Define paths for API routes
+	apiRouter := http.NewServeMux()
+	apiRouter.HandleFunc("/health", healthCheckHandler)
+	apiRouter.HandleFunc("/movies", apiCfg.getMoviesHandler)
+	apiRouter.HandleFunc("/users", apiCfg.createUserHandler)
 
-	router.Handle("/api/v1", http.StripPrefix("/api/v1", router))
+	// Define paths for static routes
+	router.Handle("/api/v1/", http.StripPrefix("/api/v1", apiRouter))
 
 	server := &http.Server{
 		Addr:    ":" + portStr,
@@ -147,6 +150,34 @@ func StartServer() {
 		}
 	}
 
+	shiftNonUpdatedMovies(apiCfg)
+
 	log.Printf("Starting server on port %s\n", portStr)
 	server.ListenAndServe()
+}
+
+func shiftNonUpdatedMovies(apiCfg *apiConfig) {
+	movies, err := apiCfg.DB.GetMoviesUpdatedMoreThanAnHourAgo(context.Background())
+
+	if err != nil {
+		log.Printf("Error getting movies: %v\n", err)
+		return
+	}
+
+	for index, movie := range movies {
+
+		updatedMovie, err := apiCfg.DB.UpdateMovie(context.Background(), database.UpdateMovieParams{
+			ID:        movie.ID,
+			Rank:      101 + int32(index),
+			PeakRank:  movie.PeakRank,
+			Rating:    movie.Rating,
+			UpdatedAt: time.Now().UTC(),
+		})
+
+		if err != nil {
+			log.Printf("Error updating movie: %v\n", err)
+		} else {
+			log.Printf("Updated movie: %v\n", updatedMovie)
+		}
+	}
 }

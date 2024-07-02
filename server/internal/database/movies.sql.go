@@ -204,6 +204,49 @@ func (q *Queries) GetMovies(ctx context.Context) ([]Movie, error) {
 	return items, nil
 }
 
+const getMoviesUpdatedMoreThanAnHourAgo = `-- name: GetMoviesUpdatedMoreThanAnHourAgo :many
+SELECT id, title, rank, peak_rank, release_year, duration, audience, rating, votes, image_src, image_alt, movie_url, created_at, updated_at FROM movies 
+  WHERE updated_at <= NOW() - INTERVAL '1 hour'
+`
+
+func (q *Queries) GetMoviesUpdatedMoreThanAnHourAgo(ctx context.Context) ([]Movie, error) {
+	rows, err := q.db.QueryContext(ctx, getMoviesUpdatedMoreThanAnHourAgo)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Movie
+	for rows.Next() {
+		var i Movie
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Rank,
+			&i.PeakRank,
+			&i.ReleaseYear,
+			&i.Duration,
+			&i.Audience,
+			&i.Rating,
+			&i.Votes,
+			&i.ImageSrc,
+			&i.ImageAlt,
+			&i.MovieUrl,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateMovie = `-- name: UpdateMovie :one
 UPDATE movies SET rank = $2, peak_rank = $3, rating = $4, updated_at = $5 WHERE id = $1 RETURNING id, title, rank, peak_rank, release_year, duration, audience, rating, votes, image_src, image_alt, movie_url, created_at, updated_at
 `

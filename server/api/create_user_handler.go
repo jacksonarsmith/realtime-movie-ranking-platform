@@ -21,7 +21,7 @@ func (apiCfg *apiConfig) createUserHandler(w http.ResponseWriter, r *http.Reques
 	err := decoder.Decode(&params)
 
 	if err != nil {
-		respondWithError(w, http.StatusBadRequest, "Erroring parsing request body")
+		respondWithError(w, http.StatusBadRequest, "Error parsing request body")
 		return
 	}
 

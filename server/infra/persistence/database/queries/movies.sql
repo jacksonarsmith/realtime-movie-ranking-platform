@@ -4,6 +4,10 @@ INSERT INTO movies (id, title, rank, peak_rank, release_year, duration, audience
 -- name: GetMovies :many
 SELECT * FROM movies; 
 
+-- name: GetMoviesUpdatedMoreThanAnHourAgo :many
+SELECT * FROM movies 
+  WHERE updated_at <= NOW() - INTERVAL '1 hour';
+
 -- name: CheckMovieExists :one
 SELECT EXISTS (
     SELECT 1
