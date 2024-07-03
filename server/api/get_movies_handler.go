@@ -13,5 +13,5 @@ func (apiCfg *apiConfig) getMoviesHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	respondWithJSON(w, http.StatusOK, movies)
+	respondWithJSON(w, http.StatusOK, databaseMoviesToAPIMovies(movies))
 }

@@ -22,6 +22,9 @@ SELECT EXISTS (
 ) AS exists;
 
 -- name: GetMovieById :one
+SELECT * FROM movies WHERE id = $1;
+
+-- name: GetMovieByFields :one
 SELECT *
   FROM movies
   WHERE title = $1

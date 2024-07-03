@@ -50,9 +50,11 @@ func StartServer() {
 
 	// Define paths for API routes
 	apiRouter := http.NewServeMux()
-	apiRouter.HandleFunc("/health", healthCheckHandler)
-	apiRouter.HandleFunc("/movies", apiCfg.getMoviesHandler)
-	apiRouter.HandleFunc("/users", apiCfg.createUserHandler)
+	apiRouter.HandleFunc("GET /health", healthCheckHandler)
+	apiRouter.HandleFunc("GET /movies", apiCfg.getMoviesHandler)
+	apiRouter.HandleFunc("GET /movies/{id}", apiCfg.getMovieHandler)
+	apiRouter.HandleFunc("GET /users", apiCfg.getUserHandler)
+	apiRouter.HandleFunc("POST /users", apiCfg.createUserHandler)
 
 	// Define paths for static routes
 	router.Handle("/api/v1/", http.StripPrefix("/api/v1", apiRouter))
@@ -85,7 +87,7 @@ func StartServer() {
 		if exists {
 			log.Printf("Movie already exists: %v\n", movie)
 
-			m, err := apiCfg.DB.GetMovieById(context.Background(), database.GetMovieByIdParams{
+			m, err := apiCfg.DB.GetMovieByFields(context.Background(), database.GetMovieByFieldsParams{
 				Title:       movie.Title,
 				ReleaseYear: movie.Year,
 				Duration:    movie.Duration,

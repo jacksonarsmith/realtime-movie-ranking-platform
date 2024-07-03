@@ -11,25 +11,27 @@ import (
 )
 
 type Movie struct {
-	ID          uuid.UUID
-	Title       string
-	Rank        int32
-	PeakRank    int32
-	ReleaseYear int32
-	Duration    int32
-	Audience    string
-	Rating      float64
-	Votes       int32
-	ImageSrc    string
-	ImageAlt    string
-	MovieUrl    string
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	ID          uuid.UUID `json:"id"`
+	Title       string    `json:"title"`
+	Rank        int32     `json:"rank"`
+	PeakRank    int32     `json:"peak_rank"`
+	ReleaseYear int32     `json:"release_year"`
+	Duration    int32     `json:"duration"`
+	Audience    string    `json:"audience"`
+	Rating      float64   `json:"rating"`
+	Votes       int32     `json:"votes"`
+	ImageSrc    string    `json:"image_src"`
+	ImageAlt    string    `json:"image_alt"`
+	MovieUrl    string    `json:"movie_url"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 type User struct {
-	ID        uuid.UUID
-	Name      string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID           uuid.UUID `json:"id"`
+	Name         string    `json:"name"`
+	Email        string    `json:"email"`
+	PasswordHash string    `json:"password_hash"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
 }

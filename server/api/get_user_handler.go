@@ -5,15 +5,12 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
-	"time"
 
-	"github.com/google/uuid"
 	"github.com/jacksonarsmith/realtime-movie-ranking-platform/internal/database"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func (apiCfg *apiConfig) createUserHandler(w http.ResponseWriter, r *http.Request) {
-
+func (apiCfg *apiConfig) getUserHandler(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
 		Name     string `json:"name"`
 		Email    string `json:"email"`
@@ -42,19 +39,15 @@ func (apiCfg *apiConfig) createUserHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	user, err := apiCfg.DB.CreateUser(r.Context(), database.CreateUserParams{
-		ID:           uuid.New(),
-		Name:         params.Name,
+	user, err := apiCfg.DB.GetUser(r.Context(), database.GetUserParams{
 		Email:        params.Email,
 		PasswordHash: string(hashedPassword),
-		CreatedAt:    time.Now().UTC(),
-		UpdatedAt:    time.Now().UTC(),
 	})
 
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Error creating user: %v", err))
+		respondWithError(w, http.StatusInternalServerError, fmt.Sprintf("Error getting user: %v", err))
 		return
 	}
 
-	respondWithJSON(w, http.StatusCreated, databaseUserToAPIUser(user))
+	respondWithJSON(w, http.StatusOK, databaseUserToAPIUser(user))
 }
