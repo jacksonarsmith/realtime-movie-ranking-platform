@@ -45,28 +45,3 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 	)
 	return i, err
 }
-
-const getUser = `-- name: GetUser :one
-SELECT id, name, email, password_hash, created_at, updated_at FROM users 
-    WHERE email = $1
-    AND password_hash = $2
-`
-
-type GetUserParams struct {
-	Email        string `json:"email"`
-	PasswordHash string `json:"password_hash"`
-}
-
-func (q *Queries) GetUser(ctx context.Context, arg GetUserParams) (User, error) {
-	row := q.queryRow(ctx, q.getUserStmt, getUser, arg.Email, arg.PasswordHash)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Email,
-		&i.PasswordHash,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
-}

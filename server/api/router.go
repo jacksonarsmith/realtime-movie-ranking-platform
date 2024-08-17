@@ -13,6 +13,7 @@ import (
 	"github.com/jacksonarsmith/realtime-movie-ranking-platform/internal/scraper"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
+	"github.com/rs/cors"
 )
 
 type apiConfig struct {
@@ -46,6 +47,10 @@ func StartServer() {
 		DB: queries,
 	}
 
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{"http://localhost:5173"},
+	})
+
 	router := http.NewServeMux()
 
 	// Define paths for API routes
@@ -53,7 +58,6 @@ func StartServer() {
 	apiRouter.HandleFunc("GET /health", healthCheckHandler)
 	apiRouter.HandleFunc("GET /movies", apiCfg.getMoviesHandler)
 	apiRouter.HandleFunc("GET /movies/{id}", apiCfg.getMovieHandler)
-	apiRouter.HandleFunc("GET /users", apiCfg.getUserHandler)
 	apiRouter.HandleFunc("POST /users", apiCfg.createUserHandler)
 
 	// Define paths for static routes
@@ -61,7 +65,7 @@ func StartServer() {
 
 	server := &http.Server{
 		Addr:    ":" + portStr,
-		Handler: router,
+		Handler: c.Handler(router),
 	}
 
 	data := scraper.Scrape()

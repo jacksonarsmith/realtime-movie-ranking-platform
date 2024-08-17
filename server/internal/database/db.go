@@ -45,9 +45,6 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getMoviesUpdatedMoreThanAnHourAgoStmt, err = db.PrepareContext(ctx, getMoviesUpdatedMoreThanAnHourAgo); err != nil {
 		return nil, fmt.Errorf("error preparing query GetMoviesUpdatedMoreThanAnHourAgo: %w", err)
 	}
-	if q.getUserStmt, err = db.PrepareContext(ctx, getUser); err != nil {
-		return nil, fmt.Errorf("error preparing query GetUser: %w", err)
-	}
 	if q.updateMovieStmt, err = db.PrepareContext(ctx, updateMovie); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateMovie: %w", err)
 	}
@@ -89,11 +86,6 @@ func (q *Queries) Close() error {
 	if q.getMoviesUpdatedMoreThanAnHourAgoStmt != nil {
 		if cerr := q.getMoviesUpdatedMoreThanAnHourAgoStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getMoviesUpdatedMoreThanAnHourAgoStmt: %w", cerr)
-		}
-	}
-	if q.getUserStmt != nil {
-		if cerr := q.getUserStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getUserStmt: %w", cerr)
 		}
 	}
 	if q.updateMovieStmt != nil {
@@ -147,7 +139,6 @@ type Queries struct {
 	getMovieByIdStmt                      *sql.Stmt
 	getMoviesStmt                         *sql.Stmt
 	getMoviesUpdatedMoreThanAnHourAgoStmt *sql.Stmt
-	getUserStmt                           *sql.Stmt
 	updateMovieStmt                       *sql.Stmt
 }
 
@@ -162,7 +153,6 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getMovieByIdStmt:                      q.getMovieByIdStmt,
 		getMoviesStmt:                         q.getMoviesStmt,
 		getMoviesUpdatedMoreThanAnHourAgoStmt: q.getMoviesUpdatedMoreThanAnHourAgoStmt,
-		getUserStmt:                           q.getUserStmt,
 		updateMovieStmt:                       q.updateMovieStmt,
 	}
 }

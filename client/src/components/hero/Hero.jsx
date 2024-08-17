@@ -46,7 +46,7 @@ const Hero = () => {
 
 
     return (
-      <Box sx={{ display: 'flex',  flexDirection: 'column', alignItems: 'center', p: 10 }}>
+      <Box sx={{ display: 'flex',  flexDirection: 'column', alignItems: 'center', p: 10, gap: 5 }}>
           <Typography variant="h1">
               Our Newest Movies
           </Typography>
