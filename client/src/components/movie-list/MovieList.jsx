@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Avatar, Container, Card, CardHeader, Divider, Grid, Typography, Box, CardContent } from "@mui/material";
+import { Avatar, Container, Card, CardHeader, Divider, Grid, Typography, CardContent } from "@mui/material";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import HeartIcon from '@mui/icons-material/Favorite';
@@ -11,7 +11,7 @@ const MovieList = () => {
     useEffect(() => {
         const fetchMovieList = async () => {
             try {
-                const response = await axios.get("http://localhost:8080/api/v1/movies");
+                const response = await axios.get(`${import.meta.env.VITE_DEV_API}movies`);
                 setMovieList(response.data.sort((a, b) => a.rank - b.rank));
             } catch (error) {
                 console.error("Error fetching movies:", error);
