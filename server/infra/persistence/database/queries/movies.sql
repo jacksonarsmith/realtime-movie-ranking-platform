@@ -38,3 +38,11 @@ LIMIT 1;
 
 -- name: UpdateMovie :one
 UPDATE movies SET rank = $2, peak_rank = $3, rating = $4, updated_at = $5 WHERE id = $1 RETURNING *;
+
+-- name: GetPaginatedMoviesByRank :many
+SELECT * FROM movies ORDER BY rank ASC LIMIT $1 OFFSET $2;
+
+-- name: GetPaginatedMoviesByReleaseYear :many
+SELECT * FROM movies ORDER BY release_year DESC LIMIT $1 OFFSET $2;
+
+

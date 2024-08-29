@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Avatar, IconButton, Container, Card, CardHeader, Divider, Grid, Typography, CardContent, TextField, Box, FormControl, Select, InputLabel, MenuItem } from "@mui/material";
+import { Avatar, IconButton, Container, Card, CardHeader, Divider, Grid, Typography, CardContent, TextField, Box, FormControl, Select, InputLabel, MenuItem, CardActions } from "@mui/material";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import HeartIcon from '@mui/icons-material/Favorite';
@@ -95,6 +95,7 @@ const MovieList = () => {
                             minWidth: 120,
                             bgcolor: 'quaternary.main', 
                         }}
+                        variant="filled"
                     >
                         <MenuItem value="">
                             <em>None</em>
@@ -153,7 +154,7 @@ const MovieList = () => {
                                     <img src={movie.image_src} alt={movie.image_alt}/>
                                 </Link>
                             </CardContent>
-                            <CardContent
+                            <CardActions
                                 sx={{
                                     display: 'flex',
                                     alignItems: 'flex-start',
@@ -167,7 +168,7 @@ const MovieList = () => {
                                 <IconButton onClick={() => saveOnClick(movie)}>
                                     <Bookmark sx={{ color: 'tertiary.main' }}/>
                                 </IconButton>
-                            </CardContent>
+                            </CardActions>
                         </Card>
                     </Grid>
                 ))}
