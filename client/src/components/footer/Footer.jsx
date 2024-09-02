@@ -1,37 +1,57 @@
-import { Box, Typography, Container, Link, useTheme } from '@mui/material';
+import { AppBar, Toolbar, useTheme, Grid, ButtonGroup, Button, Typography } from '@mui/material';
+import { Link } from 'react-router-dom';
+
+const navItems = [ 'Home', 'Movies' ]
 
 const Footer = () => {
 
     const theme = useTheme();
     return (
-        <Box
-        component="footer"
-        sx={{
-            py: 3,
-            px: 2,
-            mt: 'auto',
-            width: '100%',
-            position: 'fixed',
-            bottom: 0,
-            backgroundColor: theme.palette.primary.main,
-            color: theme.palette.quintenary.main,
-            boxShadow: '0 0 1rem #00022b'
-        }}
+        <AppBar position='static'
+            sx={{
+                top: 'auto',
+                bottom: 0,
+                width: '100vw',
+                backgroundColor: theme.palette.primary.main,
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                p: 2,
+                boxShadow: 3
+            }}
         >
-        <Container maxWidth="sm">
-            <Typography variant="body1">
-            My sticky footer can be found here.
-            </Typography>
-            <Typography variant="body2" color="text.secondary" align="center">
-            {'Copyright © '}
-            <Link color="inherit" href="https://yourwebsite.com/">
-                Your Website
-            </Link>{' '}
-            {new Date().getFullYear()}
-            {'.'}
-            </Typography>
-        </Container>
-        </Box>
+            <Toolbar 
+                sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                }}
+            >
+                <Grid container spacing={4}
+                    sx={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        p: 4
+                    }}
+                >
+                    <Grid item xs={12}>
+                        <ButtonGroup color='inherit' variant='text' aria-label='Footer navigation button group'>
+                            {navItems.map((item, index) => (
+                                <Button key={index} component={Link} to={`/${item.toLowerCase()}`}>
+                                    {item}
+                                </Button>
+                            ))}
+                        </ButtonGroup>
+                    </Grid>
+                </Grid>
+                <Typography variant='body2' color='inherit'>
+                    © {new Date().getFullYear()} RTMDB. All rights reserved
+                </Typography>
+            </Toolbar>
+        </AppBar>
     );
 };
 

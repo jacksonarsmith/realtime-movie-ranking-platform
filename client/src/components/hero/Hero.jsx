@@ -1,6 +1,36 @@
 import { Box, Typography, InputBase } from '@mui/material'
 import { styled, alpha } from '@mui/material/styles';
 import SearchIcon from '@mui/icons-material/Search';
+import Marquee from '../../utils/marquee/Marquee';
+
+const movies = [
+  {
+    title: 'Movie 1',
+    description: 'This is the description for movie 1.',
+    poster: null,
+  },
+  {
+    title: 'Movie 2',
+    description: 'This is the description for movie 2.',
+    poster: null,
+  },
+  {
+    title: 'Movie 3',
+    description: 'This is the description for movie 3.',
+    poster: null,
+  },
+  {
+    title: 'Movie 4',
+    description: 'This is the description for movie 4.',
+    poster: null,
+  },
+  {
+    title: 'Movie 5',
+    description: 'This is the description for movie 5.',
+    poster: null,
+  }
+  // Add more movie objects as needed
+];
 
 const Hero = () => {
 
@@ -46,7 +76,7 @@ const Hero = () => {
 
 
     return (
-      <Box sx={{ display: 'flex',  flexDirection: 'column', alignItems: 'center', p: 10, gap: 5 }}>
+      <Box sx={{ display: 'flex',  flexDirection: 'column', alignItems: 'center', p: 10, gap: 5, height: '100vh' }}>
           <Typography variant="h1">
               Our Newest Movies
           </Typography>
@@ -62,6 +92,7 @@ const Hero = () => {
                   inputProps={{ 'aria-label': 'search' }}
               />
           </Search>
+          <Marquee movies={movies} />
       </Box>
     )
 }
