@@ -60,6 +60,7 @@ func StartServer() {
 	apiRouter.HandleFunc("GET /movies/featured", apiCfg.getFeaturedMoviesHandler)
 	apiRouter.HandleFunc("GET /movies/{id}", apiCfg.getMovieHandler)
 	apiRouter.HandleFunc("POST /users", apiCfg.createUserHandler)
+	apiRouter.HandleFunc("POST /login", apiCfg.loginHandler)
 
 	// Define paths for static routes
 	router.Handle("/api/v1/", http.StripPrefix("/api/v1", apiRouter))

@@ -54,6 +54,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getPaginatedMoviesByReleaseYearStmt, err = db.PrepareContext(ctx, getPaginatedMoviesByReleaseYear); err != nil {
 		return nil, fmt.Errorf("error preparing query GetPaginatedMoviesByReleaseYear: %w", err)
 	}
+	if q.getUserByEmailStmt, err = db.PrepareContext(ctx, getUserByEmail); err != nil {
+		return nil, fmt.Errorf("error preparing query GetUserByEmail: %w", err)
+	}
 	if q.updateMovieStmt, err = db.PrepareContext(ctx, updateMovie); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateMovie: %w", err)
 	}
@@ -112,6 +115,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getPaginatedMoviesByReleaseYearStmt: %w", cerr)
 		}
 	}
+	if q.getUserByEmailStmt != nil {
+		if cerr := q.getUserByEmailStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getUserByEmailStmt: %w", cerr)
+		}
+	}
 	if q.updateMovieStmt != nil {
 		if cerr := q.updateMovieStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateMovieStmt: %w", cerr)
@@ -166,6 +174,7 @@ type Queries struct {
 	getMoviesUpdatedMoreThanAnHourAgoStmt *sql.Stmt
 	getPaginatedMoviesByRankStmt          *sql.Stmt
 	getPaginatedMoviesByReleaseYearStmt   *sql.Stmt
+	getUserByEmailStmt                    *sql.Stmt
 	updateMovieStmt                       *sql.Stmt
 }
 
@@ -183,6 +192,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getMoviesUpdatedMoreThanAnHourAgoStmt: q.getMoviesUpdatedMoreThanAnHourAgoStmt,
 		getPaginatedMoviesByRankStmt:          q.getPaginatedMoviesByRankStmt,
 		getPaginatedMoviesByReleaseYearStmt:   q.getPaginatedMoviesByReleaseYearStmt,
+		getUserByEmailStmt:                    q.getUserByEmailStmt,
 		updateMovieStmt:                       q.updateMovieStmt,
 	}
 }
