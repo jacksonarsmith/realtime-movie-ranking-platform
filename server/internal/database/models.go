@@ -10,6 +10,23 @@ import (
 	"github.com/google/uuid"
 )
 
+type Comment struct {
+	ID        uuid.UUID `json:"id"`
+	UserID    uuid.UUID `json:"user_id"`
+	MovieID   uuid.UUID `json:"movie_id"`
+	Comment   string    `json:"comment"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type Like struct {
+	ID        uuid.UUID `json:"id"`
+	UserID    uuid.UUID `json:"user_id"`
+	MovieID   uuid.UUID `json:"movie_id"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
 type Movie struct {
 	ID          uuid.UUID `json:"id"`
 	Title       string    `json:"title"`
@@ -25,6 +42,14 @@ type Movie struct {
 	MovieUrl    string    `json:"movie_url"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+type Safe struct {
+	ID        uuid.UUID `json:"id"`
+	UserID    uuid.UUID `json:"user_id"`
+	MovieID   uuid.UUID `json:"movie_id"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type User struct {

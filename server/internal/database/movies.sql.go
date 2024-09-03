@@ -109,6 +109,48 @@ func (q *Queries) CreateMovie(ctx context.Context, arg CreateMovieParams) (Movie
 	return i, err
 }
 
+const getFeaturedMovies = `-- name: GetFeaturedMovies :many
+SELECT id, title, rank, peak_rank, release_year, duration, audience, rating, votes, image_src, image_alt, movie_url, created_at, updated_at FROM movies WHERE rank <= 10
+`
+
+func (q *Queries) GetFeaturedMovies(ctx context.Context) ([]Movie, error) {
+	rows, err := q.query(ctx, q.getFeaturedMoviesStmt, getFeaturedMovies)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Movie
+	for rows.Next() {
+		var i Movie
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Rank,
+			&i.PeakRank,
+			&i.ReleaseYear,
+			&i.Duration,
+			&i.Audience,
+			&i.Rating,
+			&i.Votes,
+			&i.ImageSrc,
+			&i.ImageAlt,
+			&i.MovieUrl,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getMovieByFields = `-- name: GetMovieByFields :one
 SELECT id, title, rank, peak_rank, release_year, duration, audience, rating, votes, image_src, image_alt, movie_url, created_at, updated_at
   FROM movies
@@ -237,6 +279,100 @@ SELECT id, title, rank, peak_rank, release_year, duration, audience, rating, vot
 
 func (q *Queries) GetMoviesUpdatedMoreThanAnHourAgo(ctx context.Context) ([]Movie, error) {
 	rows, err := q.query(ctx, q.getMoviesUpdatedMoreThanAnHourAgoStmt, getMoviesUpdatedMoreThanAnHourAgo)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Movie
+	for rows.Next() {
+		var i Movie
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Rank,
+			&i.PeakRank,
+			&i.ReleaseYear,
+			&i.Duration,
+			&i.Audience,
+			&i.Rating,
+			&i.Votes,
+			&i.ImageSrc,
+			&i.ImageAlt,
+			&i.MovieUrl,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getPaginatedMoviesByRank = `-- name: GetPaginatedMoviesByRank :many
+SELECT id, title, rank, peak_rank, release_year, duration, audience, rating, votes, image_src, image_alt, movie_url, created_at, updated_at FROM movies ORDER BY rank ASC LIMIT $1 OFFSET $2
+`
+
+type GetPaginatedMoviesByRankParams struct {
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) GetPaginatedMoviesByRank(ctx context.Context, arg GetPaginatedMoviesByRankParams) ([]Movie, error) {
+	rows, err := q.query(ctx, q.getPaginatedMoviesByRankStmt, getPaginatedMoviesByRank, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Movie
+	for rows.Next() {
+		var i Movie
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Rank,
+			&i.PeakRank,
+			&i.ReleaseYear,
+			&i.Duration,
+			&i.Audience,
+			&i.Rating,
+			&i.Votes,
+			&i.ImageSrc,
+			&i.ImageAlt,
+			&i.MovieUrl,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getPaginatedMoviesByReleaseYear = `-- name: GetPaginatedMoviesByReleaseYear :many
+SELECT id, title, rank, peak_rank, release_year, duration, audience, rating, votes, image_src, image_alt, movie_url, created_at, updated_at FROM movies ORDER BY release_year DESC LIMIT $1 OFFSET $2
+`
+
+type GetPaginatedMoviesByReleaseYearParams struct {
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) GetPaginatedMoviesByReleaseYear(ctx context.Context, arg GetPaginatedMoviesByReleaseYearParams) ([]Movie, error) {
+	rows, err := q.query(ctx, q.getPaginatedMoviesByReleaseYearStmt, getPaginatedMoviesByReleaseYear, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

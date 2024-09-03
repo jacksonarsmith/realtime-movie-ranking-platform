@@ -1,34 +1,26 @@
 import * as React from 'react';
-import { AppBar, Box, Button, Toolbar, IconButton, Typography, MenuItem, Menu, Drawer, List, ListItem, ListItemIcon, ListItemText, Divider } from '@mui/material';
+import { AppBar, Box, Toolbar, IconButton, Typography, MenuItem, Menu, Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Tooltip } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import HomeIcon from '@mui/icons-material/Home';
 import MovieIcon from '@mui/icons-material/Movie';
+import LightModeIcon from '@mui/icons-material/LightMode';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
 import { Link } from 'react-router-dom';
+import PropTypes from 'prop-types';
 
-const Navbar = () => {
+const Navbar = ({ toggleTheme, isDarkMode }) => {
     const [anchorEl, setAnchorEl] = React.useState(null);
-    const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
     const [drawerOpen, setDrawerOpen] = React.useState(false);
 
     const isMenuOpen = Boolean(anchorEl);
-    const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
 
     const handleProfileMenuOpen = (event) => {
         setAnchorEl(event.currentTarget);
     };
 
-    const handleMobileMenuClose = () => {
-        setMobileMoreAnchorEl(null);
-    };
-
     const handleMenuClose = () => {
         setAnchorEl(null);
-        handleMobileMenuClose();
-    };
-
-    const handleMobileMenuOpen = (event) => {
-        setMobileMoreAnchorEl(event.currentTarget);
     };
 
     const toggleDrawer = (open) => (event) => {
@@ -57,38 +49,6 @@ const Navbar = () => {
         >
             <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
             <MenuItem onClick={handleMenuClose}>My account</MenuItem>
-        </Menu>
-    );
-
-    const mobileMenuId = 'primary-search-account-menu-mobile';
-    const renderMobileMenu = (
-        <Menu
-            anchorEl={mobileMoreAnchorEl}
-            anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-            }}
-            id={mobileMenuId}
-            keepMounted
-            transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-            }}
-            open={isMobileMenuOpen}
-            onClose={handleMobileMenuClose}
-        >
-            <MenuItem onClick={handleProfileMenuOpen}>
-                <IconButton
-                    size="large"
-                    aria-label="account of current user"
-                    aria-controls="primary-search-account-menu"
-                    aria-haspopup="true"
-                    color="inherit"
-                >
-                    <AccountCircle />
-                </IconButton>
-                <p>Profile</p>
-            </MenuItem>
         </Menu>
     );
 
@@ -127,7 +87,7 @@ const Navbar = () => {
     );
 
     return (
-        <Box sx={{ flexGrow: 1, boxShadow: '0 0 0.5rem #00022b' }}>
+        <Box sx={{ flexGrow: 1, boxShadow: 3 }}>
             <AppBar position="static">
                 <Toolbar>
                     <IconButton
@@ -135,7 +95,7 @@ const Navbar = () => {
                         edge="start"
                         color="inherit"
                         aria-label="open drawer"
-                        sx={{ mr: 2, display: { xs: 'flex', md: 'none' } }}
+                        sx={{ mr: 2 }}
                         onClick={toggleDrawer(true)}
                     >
                         <MenuIcon />
@@ -147,39 +107,24 @@ const Navbar = () => {
                     >
                         {drawerList}
                     </Drawer>
-                    <Button color="inherit" component={Link} to="/" sx={{ display: { xs: 'none', md: 'flex' } }}>
-                        <HomeIcon />
-                    </Button>
-                    <Button color="inherit" component={Link} to="/movies" sx={{ display: { xs: 'none', md: 'flex' } }}>
-                        <Typography
-                            variant="h6"
-                            noWrap
-                            component="div"
-                            sx={{ display: { xs: 'none', sm: 'block' } }}
-                        >
-                            Movies
-                        </Typography>
-                    </Button>
-                    <Box sx={{ flexGrow: 1 }} />
-                    <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-                        <IconButton
-                            size="large"
-                            edge="end"
-                            aria-label="account of current user"
-                            aria-controls={menuId}
-                            aria-haspopup="true"
-                            onClick={handleProfileMenuOpen}
-                            color="inherit"
-                        >
-                            <AccountCircle />
+                    <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
+                        Movie Ranking Platform
+                    </Typography>
+                    <Tooltip title={isDarkMode ? 'Dark Mode' : 'Light Mode'} arrow placement="top">
+                        <IconButton color="inherit" onClick={toggleTheme}>
+                            {isDarkMode ? <DarkModeIcon /> : <LightModeIcon />}
                         </IconButton>
-                    </Box>
+                    </Tooltip>
                 </Toolbar>
             </AppBar>
-            {renderMobileMenu}
             {renderMenu}
         </Box>
     );
 }
+
+Navbar.propTypes = {
+    toggleTheme: PropTypes.func.isRequired,
+    isDarkMode: PropTypes.bool.isRequired,
+};
 
 export default Navbar;

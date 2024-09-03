@@ -45,4 +45,5 @@ SELECT * FROM movies ORDER BY rank ASC LIMIT $1 OFFSET $2;
 -- name: GetPaginatedMoviesByReleaseYear :many
 SELECT * FROM movies ORDER BY release_year DESC LIMIT $1 OFFSET $2;
 
-
+-- name: GetFeaturedMovies :many
+SELECT * FROM movies WHERE rank <= 10;

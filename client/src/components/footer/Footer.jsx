@@ -1,18 +1,16 @@
-import { AppBar, Toolbar, useTheme, Grid, ButtonGroup, Button, Typography } from '@mui/material';
+import { AppBar, Toolbar, Grid, ButtonGroup, Button, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
 
 const navItems = [ 'Home', 'Movies' ]
 
 const Footer = () => {
 
-    const theme = useTheme();
     return (
         <AppBar position='static'
             sx={{
                 top: 'auto',
                 bottom: 0,
                 width: '100vw',
-                backgroundColor: theme.palette.primary.main,
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',

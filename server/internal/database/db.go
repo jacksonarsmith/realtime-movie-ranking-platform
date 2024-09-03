@@ -33,6 +33,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.createUserStmt, err = db.PrepareContext(ctx, createUser); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateUser: %w", err)
 	}
+	if q.getFeaturedMoviesStmt, err = db.PrepareContext(ctx, getFeaturedMovies); err != nil {
+		return nil, fmt.Errorf("error preparing query GetFeaturedMovies: %w", err)
+	}
 	if q.getMovieByFieldsStmt, err = db.PrepareContext(ctx, getMovieByFields); err != nil {
 		return nil, fmt.Errorf("error preparing query GetMovieByFields: %w", err)
 	}
@@ -44,6 +47,12 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.getMoviesUpdatedMoreThanAnHourAgoStmt, err = db.PrepareContext(ctx, getMoviesUpdatedMoreThanAnHourAgo); err != nil {
 		return nil, fmt.Errorf("error preparing query GetMoviesUpdatedMoreThanAnHourAgo: %w", err)
+	}
+	if q.getPaginatedMoviesByRankStmt, err = db.PrepareContext(ctx, getPaginatedMoviesByRank); err != nil {
+		return nil, fmt.Errorf("error preparing query GetPaginatedMoviesByRank: %w", err)
+	}
+	if q.getPaginatedMoviesByReleaseYearStmt, err = db.PrepareContext(ctx, getPaginatedMoviesByReleaseYear); err != nil {
+		return nil, fmt.Errorf("error preparing query GetPaginatedMoviesByReleaseYear: %w", err)
 	}
 	if q.updateMovieStmt, err = db.PrepareContext(ctx, updateMovie); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateMovie: %w", err)
@@ -68,6 +77,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing createUserStmt: %w", cerr)
 		}
 	}
+	if q.getFeaturedMoviesStmt != nil {
+		if cerr := q.getFeaturedMoviesStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getFeaturedMoviesStmt: %w", cerr)
+		}
+	}
 	if q.getMovieByFieldsStmt != nil {
 		if cerr := q.getMovieByFieldsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getMovieByFieldsStmt: %w", cerr)
@@ -86,6 +100,16 @@ func (q *Queries) Close() error {
 	if q.getMoviesUpdatedMoreThanAnHourAgoStmt != nil {
 		if cerr := q.getMoviesUpdatedMoreThanAnHourAgoStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getMoviesUpdatedMoreThanAnHourAgoStmt: %w", cerr)
+		}
+	}
+	if q.getPaginatedMoviesByRankStmt != nil {
+		if cerr := q.getPaginatedMoviesByRankStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getPaginatedMoviesByRankStmt: %w", cerr)
+		}
+	}
+	if q.getPaginatedMoviesByReleaseYearStmt != nil {
+		if cerr := q.getPaginatedMoviesByReleaseYearStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getPaginatedMoviesByReleaseYearStmt: %w", cerr)
 		}
 	}
 	if q.updateMovieStmt != nil {
@@ -135,10 +159,13 @@ type Queries struct {
 	checkMovieExistsStmt                  *sql.Stmt
 	createMovieStmt                       *sql.Stmt
 	createUserStmt                        *sql.Stmt
+	getFeaturedMoviesStmt                 *sql.Stmt
 	getMovieByFieldsStmt                  *sql.Stmt
 	getMovieByIdStmt                      *sql.Stmt
 	getMoviesStmt                         *sql.Stmt
 	getMoviesUpdatedMoreThanAnHourAgoStmt *sql.Stmt
+	getPaginatedMoviesByRankStmt          *sql.Stmt
+	getPaginatedMoviesByReleaseYearStmt   *sql.Stmt
 	updateMovieStmt                       *sql.Stmt
 }
 
@@ -149,10 +176,13 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		checkMovieExistsStmt:                  q.checkMovieExistsStmt,
 		createMovieStmt:                       q.createMovieStmt,
 		createUserStmt:                        q.createUserStmt,
+		getFeaturedMoviesStmt:                 q.getFeaturedMoviesStmt,
 		getMovieByFieldsStmt:                  q.getMovieByFieldsStmt,
 		getMovieByIdStmt:                      q.getMovieByIdStmt,
 		getMoviesStmt:                         q.getMoviesStmt,
 		getMoviesUpdatedMoreThanAnHourAgoStmt: q.getMoviesUpdatedMoreThanAnHourAgoStmt,
+		getPaginatedMoviesByRankStmt:          q.getPaginatedMoviesByRankStmt,
+		getPaginatedMoviesByReleaseYearStmt:   q.getPaginatedMoviesByReleaseYearStmt,
 		updateMovieStmt:                       q.updateMovieStmt,
 	}
 }

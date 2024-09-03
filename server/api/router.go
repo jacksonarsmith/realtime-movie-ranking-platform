@@ -57,6 +57,7 @@ func StartServer() {
 	apiRouter := http.NewServeMux()
 	apiRouter.HandleFunc("GET /health", healthCheckHandler)
 	apiRouter.HandleFunc("GET /movies", apiCfg.getMoviesHandler)
+	apiRouter.HandleFunc("GET /movies/featured", apiCfg.getFeaturedMoviesHandler)
 	apiRouter.HandleFunc("GET /movies/{id}", apiCfg.getMovieHandler)
 	apiRouter.HandleFunc("POST /users", apiCfg.createUserHandler)
 
