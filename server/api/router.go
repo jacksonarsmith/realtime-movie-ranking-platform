@@ -62,6 +62,11 @@ func StartServer() {
 	apiRouter.HandleFunc("POST /users", apiCfg.createUserHandler)
 	apiRouter.HandleFunc("POST /login", apiCfg.loginHandler)
 
+	// Define Protected paths for API routes
+	apiRouter.Handle("/profile", jwtMiddleware(http.HandlerFunc(apiCfg.getProfileHandler)))
+	//apiRouter.Handle("/saves", jwtMiddleware(http.HandlerFunc(apiCfg.savesHandler)))
+	//apiRouter.Handle("/likes", jwtMiddleware(http.HandlerFunc(apiCfg.likesHandler)))
+
 	// Define paths for static routes
 	router.Handle("/api/v1/", http.StripPrefix("/api/v1", apiRouter))
 

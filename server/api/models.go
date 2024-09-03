@@ -33,6 +33,14 @@ type Movie struct {
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
+type LoginUser struct {
+	ID      uuid.UUID `json:"id"`
+	Name    string    `json:"name"`
+	Email   string    `json:"email"`
+	Token   string    `json:"token"`
+	Message string    `json:"message"`
+}
+
 func databaseUserToAPIUser(user database.User) User {
 	return User{
 		ID:           user.ID,
@@ -41,6 +49,16 @@ func databaseUserToAPIUser(user database.User) User {
 		PasswordHash: user.PasswordHash,
 		CreatedAt:    user.CreatedAt,
 		UpdatedAt:    user.UpdatedAt,
+	}
+}
+
+func databaseUserToLoginAPIUser(user database.User, token string, message string) LoginUser {
+	return LoginUser{
+		ID:      user.ID,
+		Name:    user.Name,
+		Email:   user.Email,
+		Token:   token,
+		Message: message,
 	}
 }
 
