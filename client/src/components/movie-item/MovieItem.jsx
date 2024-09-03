@@ -9,6 +9,13 @@ import { useParams, Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
+
+const convertDuration = (minutes) => {
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    return `${hours}h ${remainingMinutes}m`;
+}
+
 const MovieItem = () => {
     const { id } = useParams();
     const [movie, setMovie] = useState({});
@@ -29,7 +36,7 @@ const MovieItem = () => {
     const movieDetails = [
         { label: 'Rank', value: movie.rank, icon: <EmojiEventsIcon sx={{ mr: 1 }} /> },
         { label: 'Release Year', value: movie.release_year, icon: <CalendarMonthIcon sx={{ mr: 1 }} /> },
-        { label: 'Duration', value: movie.duration, icon: <TimelapseIcon sx={{ mr: 1 }} /> },
+        { label: 'Duration', value: convertDuration(movie.duration), icon: <TimelapseIcon sx={{ mr: 1 }} /> },
         { label: 'Genre', value: movie.audience, icon: <SubscriptionsIcon sx={{ mr: 1 }} /> },
         { label: 'Rating', value: movie.rating, icon: <GradeIcon sx={{ mr: 1 }} /> },
         { label: 'Votes', value: movie.votes, icon: <BallotIcon sx={{ mr: 1 }} /> },
