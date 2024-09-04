@@ -1,6 +1,9 @@
-import * as React from 'react';
-import { AppBar, Box, Toolbar, IconButton, Typography, MenuItem, Menu, Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Tooltip } from '@mui/material';
+import { useState, useContext } from 'react';
+import { AppBar, Box, Toolbar, IconButton, Typography, MenuItem, Menu, Drawer, Divider, Tooltip, Button } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
+import LoginIcon from '@mui/icons-material/Login';
+import LogoutIcon from '@mui/icons-material/Logout';
+import ArrowCircleLeftIcon from '@mui/icons-material/ArrowCircleLeft';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import HomeIcon from '@mui/icons-material/Home';
 import MovieIcon from '@mui/icons-material/Movie';
@@ -8,16 +11,14 @@ import LightModeIcon from '@mui/icons-material/LightMode';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
+import { AuthContext } from '../../hooks/AuthContext';
 
 const Navbar = ({ toggleTheme, isDarkMode }) => {
-    const [anchorEl, setAnchorEl] = React.useState(null);
-    const [drawerOpen, setDrawerOpen] = React.useState(false);
+    const { isAuthenticated, logout } = useContext(AuthContext);
+    const [anchorEl, setAnchorEl] = useState(null);
+    const [drawerOpen, setDrawerOpen] = useState(false);
 
     const isMenuOpen = Boolean(anchorEl);
-
-    const handleProfileMenuOpen = (event) => {
-        setAnchorEl(event.currentTarget);
-    };
 
     const handleMenuClose = () => {
         setAnchorEl(null);
@@ -59,30 +60,72 @@ const Navbar = ({ toggleTheme, isDarkMode }) => {
             onClick={toggleDrawer(false)}
             onKeyDown={toggleDrawer(false)}
         >
-            <List>
-                <ListItem button component={Link} to="/">
-                    <ListItemIcon>
-                        <HomeIcon />
-                    </ListItemIcon>
-                    <ListItemText primary="Home" />
-                </ListItem>
-                <ListItem button component={Link} to="/movies">
-                    <ListItemIcon>
-                        <MovieIcon />
-                    </ListItemIcon>
-                    <ListItemText primary="Movies" />
-                </ListItem>
-            </List>
-            <Box sx={{ flexGrow: 1 }} />
-            <Divider />
-            <List>
-                <ListItem button onClick={handleProfileMenuOpen}>
-                    <ListItemIcon>
-                        <AccountCircle />
-                    </ListItemIcon>
-                    <ListItemText primary="Profile" />
-                </ListItem>
-            </List>
+            <Box
+                sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    p: 2
+                }}
+            >
+                <Tooltip title="Close" arrow placement="right">
+                    <IconButton onClick={toggleDrawer(false)}>
+                        <ArrowCircleLeftIcon fontSize='large' color="primary"/>
+                    </IconButton>
+                </Tooltip>
+                {isAuthenticated ? (
+                    <Button variant='contained' onClick={logout} sx={{ gap: 1 }}>
+                        <Typography variant='button'>Logout</Typography>
+                        <LogoutIcon />
+                    </Button>
+                ) : (
+                    <Button variant='contained' component={Link} to="/login" sx={{ gap: 1 }}>
+                        <Typography variant='button'>Login</Typography>
+                        <LoginIcon />
+                    </Button>
+                )}
+            </Box>
+            <Divider sx={{ width: '100%', mt: 2 }} />
+            <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', }}>
+                <Box
+                    sx={{
+                        width: '100%', 
+                        display: 'flex',
+                        flexDirection: 'column',
+                    }}
+                >
+                    <Button component={Link} to="/"
+                        sx={{
+                            gap: 1,
+                            p: 2
+                        }}
+                    >
+                        <HomeIcon fontSize='large' />
+                        <Typography variant='button'>Home</Typography>
+                    </Button>
+                    <Button component={Link} to="/movies"
+                        sx={{
+                            gap: 1,
+                            p: 2
+                        }}
+                    >
+                        <MovieIcon fontSize='large' />
+                        <Typography variant='button'>Movies</Typography>
+                    </Button>
+                </Box>
+                {isAuthenticated && (
+                    <Button component={Link} to="/profile" 
+                        sx={{
+                            mt: 'auto',
+                            gap: 1,
+                            p: 2
+                        }}
+                    >
+                        <AccountCircle fontSize='large' />
+                        <Typography variant='button'>Profile</Typography>
+                    </Button>
+                )}
+            </Box>
         </Box>
     );
 
