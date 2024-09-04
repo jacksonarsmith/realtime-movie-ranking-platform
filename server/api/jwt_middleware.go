@@ -5,13 +5,20 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/joho/godotenv"
 )
 
+type ContextKey string
+
 func jwtMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		godotenv.Load()
+		err := godotenv.Load()
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, "Error loading .env file")
+			return
+		}
+
 		secret := os.Getenv("JWT_SECRET")
 		if secret == "" {
 			respondWithError(w, http.StatusInternalServerError, "JWT_SECRET is not found in environment variables")
@@ -19,13 +26,12 @@ func jwtMiddleware(next http.Handler) http.Handler {
 		}
 
 		cookie, err := r.Cookie("token")
-
 		if err != nil {
 			respondWithError(w, http.StatusUnauthorized, "Unauthorized")
 			return
 		}
 
-		claims := &Claims{}
+		claims := &jwt.RegisteredClaims{}
 
 		token, err := jwt.ParseWithClaims(cookie.Value, claims, func(token *jwt.Token) (interface{}, error) {
 			return []byte(secret), nil
@@ -36,7 +42,7 @@ func jwtMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), "email", claims.Email)
+		ctx := context.WithValue(r.Context(), ContextKey("email"), claims.Subject)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

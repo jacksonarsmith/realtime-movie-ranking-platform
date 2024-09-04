@@ -5,34 +5,28 @@ import (
 	"os"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/joho/godotenv"
 )
 
-type Claims struct {
-	Email string `json:"email"`
-	jwt.StandardClaims
-}
-
 func generateJWT(email string) (string, error) {
-	godotenv.Load()
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 
 	secret := os.Getenv("JWT_SECRET")
-
 	if secret == "" {
 		log.Fatal("JWT_SECRET is not found in environment variables")
 	}
 
-	claims := &Claims{
-		Email: email,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Hour * 24).Unix(),
-		},
+	claims := &jwt.RegisteredClaims{
+		Subject:   email,
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString([]byte(secret))
-
 	if err != nil {
 		return "", err
 	}
