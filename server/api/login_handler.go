@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"regexp"
 	"time"
@@ -58,6 +59,8 @@ func (apiCfg *apiConfig) loginHandler(w http.ResponseWriter, r *http.Request) {
 		Expires:  time.Now().Add(time.Hour * 24),
 		HttpOnly: true,
 	})
+
+	log.Default().Printf("Cookie set: %v\n", token)
 
 	respondWithJSON(w, http.StatusOK, databaseUserToLoginAPIUser(user, token, "Login successful"))
 }

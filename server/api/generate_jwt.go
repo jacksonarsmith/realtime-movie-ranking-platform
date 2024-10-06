@@ -23,11 +23,13 @@ func generateJWT(email string) (string, error) {
 	claims := &jwt.RegisteredClaims{
 		Subject:   email,
 		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
+		IssuedAt:  jwt.NewNumericDate(time.Now()),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString([]byte(secret))
 	if err != nil {
+		log.Printf("Error signing token: %v", err)
 		return "", err
 	}
 

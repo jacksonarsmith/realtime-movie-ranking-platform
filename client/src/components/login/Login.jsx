@@ -17,7 +17,8 @@ const Login = () => {
                 email: email,
                 password: password
             });
-            login(response.data.jwt);
+            console.log(response.data);
+            login(response.data.token);
             navigate('/profile');
         } catch (error) {
             console.log(error);

@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import Cookies from 'js-cookie';
 
 export const AuthContext = createContext();
 
@@ -7,19 +8,19 @@ export const AuthProvider = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
+        const token = Cookies.get('token');
         if (token) {
             setIsAuthenticated(true);
         }
     }, []);
 
     const login = (token) => {
-        localStorage.setItem('token', token);
+        Cookies.set('token', token);
         setIsAuthenticated(true);
     };
 
     const logout = () => {
-        localStorage.removeItem('token');
+        Cookies.remove('token');
         setIsAuthenticated(false);
     };
 
